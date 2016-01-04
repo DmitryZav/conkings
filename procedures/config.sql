@@ -11,8 +11,11 @@
 -- config procedure: keep all stored procedure variables
 -----------------------------------------------------------------------------
 
+-- --------------------------------------------------------------------------------
+-- Routine DDL
+-- --------------------------------------------------------------------------------
 DELIMITER $$
- 
+
 CREATE DEFINER=`xgameuser`@`localhost` PROCEDURE `config`()
 BEGIN
  
@@ -21,6 +24,8 @@ BEGIN
  
     SET @_AccNobody:=1;
     SET @_AccEvil:=2;
+ 
+    SET @_PlanetInitialPopulation = 3000;
  
     SET @_CityId:=12;
     SET @_LabId=9;
