@@ -16,22 +16,21 @@
 -- _StarId - destination star to put the new portal into, if _Dest = 0
 -----------------------------------------------------------------------------
 
-delimiter $$
+DELIMITER $$
 
-CREATE PROCEDURE `insertTunnel`(_SrcId INT UNSIGNED, _DestId UNSIGNED, _AccountId INT UNSIGNED, _StarId INT UNSIGNED)
+CREATE DEFINER=`xgameuser`@`localhost` PROCEDURE `insertTunnel`(_SrcId INT, _DestId INT, _AccountId INT, _StarId INT)
 BEGIN
 sproc:BEGIN
 
-  SET @PortalClassId:=8;
-  SET @EnergyRes:=6;
-
+ call config();
 
  IF _SrcId = _DestId THEN
       SELECT 'PortalInnerSystem' AS Result;
       LEAVE sproc;
  END IF;
 
- -- call debug(CONCAT('tunnel s:',_SrcId, 'd:',_DestId,' acc:', _AccountId,' star:', _StarId));
+ call debug(CONCAT('tunnel s:',_SrcId, 'd:',_DestId,' acc:', _AccountId,' star:', _StarId));
+
 
  IF EXISTS (SELECT * FROM Fleets S JOIN Fleets D ON 
             (S.FleetId<>D.FleetId AND S.FleetId=_SrcId AND D.FleetId=_DestId AND 
@@ -49,14 +48,10 @@ sproc:BEGIN
  
 
 
-   SET @MaxLongRoutes := (SELECT MAX_LONG_ROUTES(_AccountId));
+--   SET @MaxLongRoutes := ();
 
 
-   IF (SELECT COUNT(RouteId)+1 
-     FROM Routes JOIN Fleets S ON(S.FleetId=RouteSourcePortalId) JOIN 
-     Fleets D ON(D.FleetId=RouteDestinationPortalId) 
-     WHERE (S.FleetCGalaxy <> D.FleetCGalaxy OR S.FleetCSector <> D.FleetCSector) 
-     AND RouteOwnerAccountId=_AccountId) >= @MaxLongRoutes THEN
+   IF (SELECT MAX_LONG_ROUTES(_AccountId) - GET_LONG_ROUTES_COUNT(_AccountId)) <= 0 THEN
 
        SELECT 'RouteLongFailed' AS Result;
        LEAVE sproc;
@@ -204,5 +199,4 @@ INSERT INTO Routes
   SELECT 'Ok' AS Result;
 
 END; 
-END$$
-
+END
